@@ -1,0 +1,13 @@
+digraph "Firestore Database Structure" {
+	Users [label="Users
+(id, name, email, role)"]
+	Services [label="Services
+(id, name, price, vehicle_type)"]
+	Appointments [label="Appointments
+(id, user_id, service_id, date (timestamp), hour, status)"]
+	Schedule [label="Schedule
+(id, date (timestamp), available_hours (array), blocked (boolean))"]
+	Users -> Appointments [label="1 -> *"]
+	Services -> Appointments [label="1 -> *"]
+	Schedule -> Appointments [label=Restricts]
+}
