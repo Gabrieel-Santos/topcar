@@ -70,6 +70,14 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400"
           />
+          <div className="text-right">
+            <a
+              href="/forgot-password"
+              className="text-blue-400 hover:underline text-sm"
+            >
+              Esqueceu sua senha?
+            </a>
+          </div>
           <button className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition">
             Entrar
           </button>
