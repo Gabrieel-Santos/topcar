@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { auth } from "../firebaseConfig";
+import { auth, db } from "../firebaseConfig";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { z } from "zod";
 import { FcGoogle } from "react-icons/fc";
+import UserInfoModal from "./UserInfoModal";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -17,6 +19,11 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tempUser, setTempUser] = useState<{
+    uid: string;
+    email: string;
+  } | null>(null);
 
   const handleEmailLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,11 +46,37 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      alert("Login com Google realizado!");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      const userRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(userRef);
+
+      if (docSnap.exists()) {
+        console.log("Usuário já cadastrado:", docSnap.data());
+      } else {
+        setTempUser({ uid: user.uid, email: user.email! });
+        setIsModalOpen(true);
+      }
     } catch {
       setError("Erro ao fazer login com o Google.");
     }
+  };
+
+  const handleSaveUserInfo = async (name: string, phone: string) => {
+    if (!tempUser) return;
+
+    const userRef = doc(db, "users", tempUser.uid);
+    await setDoc(userRef, {
+      name,
+      email: tempUser.email,
+      phone,
+      role: "user",
+    });
+
+    setIsModalOpen(false);
+    setTempUser(null);
+    console.log("Usuário salvo com sucesso!");
   };
 
   return (
@@ -96,6 +129,13 @@ export default function Login() {
           </a>
         </p>
       </div>
+
+      {/* Modal para solicitar Nome e Telefone */}
+      <UserInfoModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveUserInfo}
+      />
     </div>
   );
 }
