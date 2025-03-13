@@ -59,7 +59,7 @@ export default function UserInfoModal({ isOpen, onSave }: UserInfoModalProps) {
 
         <button
           onClick={() => onSave(name, phone)}
-          className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition"
+          className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 active:bg-blue-700 active:scale-95 transition cursor-pointer"
         >
           Salvar
         </button>

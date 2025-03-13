@@ -147,13 +147,16 @@ export default function Register() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400"
           />
-          <button className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition">
+          <button className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 active:bg-blue-700 active:scale-95 transition cursor-pointer">
             Registrar
           </button>
         </form>
         <p className="text-center text-white mt-4">
           Já tem uma conta?{" "}
-          <a href="/login" className="text-blue-400 hover:underline">
+          <a
+            href="/login"
+            className="text-blue-400 hover:underline active:underline"
+          >
             Entrar
           </a>
         </p>

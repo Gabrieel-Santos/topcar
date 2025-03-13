@@ -6,6 +6,7 @@ import ForgotPassword from "./components/ForgotPassword";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import AdminServices from "./components/AdminServices";
+import AdminSchedule from "./components/AdminSchedule";
 
 function App() {
   return (
@@ -24,7 +25,8 @@ function App() {
 
           {/* Rotas exclusivas para Admin */}
           <Route element={<AdminRoute />}>
-            <Route path="/admin/services" element={<AdminServices />} />{" "}
+            <Route path="/admin/services" element={<AdminServices />} />
+            <Route path="/admin/schedule" element={<AdminSchedule />} />
             {/* 🚀 Somente admin pode acessar */}
           </Route>
 

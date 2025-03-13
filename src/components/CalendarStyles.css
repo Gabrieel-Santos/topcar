@@ -1,0 +1,73 @@
+/* Estilização geral do calendário */
+.custom-calendar {
+  background-color: #2d3748;
+  color: white;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Estilização dos botões de navegação do mês */
+.custom-calendar .react-calendar__navigation {
+  display: flex;
+  justify-content: space-between;
+  background-color: #1f2937;
+  padding: 5px;
+  border-radius: 6px;
+}
+
+.custom-calendar .react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.custom-calendar .react-calendar__navigation button:hover {
+  background-color: #4a5568;
+  border-radius: 5px;
+}
+
+/* Estilização dos dias da semana */
+.custom-calendar .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #a0aec0;
+  text-align: center;
+}
+
+/* Estilização dos dias do mês */
+.custom-calendar .react-calendar__tile {
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+  padding: 10px;
+  color: white;
+}
+
+/* Estilização do dia atual */
+.custom-calendar .react-calendar__tile--now {
+  background-color: #4a5568 !important; /* Cinza escuro */
+  color: white !important;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.custom-calendar .react-calendar__tile:enabled:hover {
+  background-color: #4a5568;
+}
+
+/* Estilização do dia selecionado */
+.custom-calendar .react-calendar__tile--active {
+  background-color: #3182ce !important;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+/* Removendo bordas feias */
+.custom-calendar .react-calendar__tile:disabled {
+  color: #555;
+}

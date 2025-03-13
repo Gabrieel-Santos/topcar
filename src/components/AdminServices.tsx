@@ -126,7 +126,7 @@ export default function AdminServices() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black p-4">
       <div className="bg-gray-800 p-6 rounded-lg shadow-md w-full max-w-sm">
-        <h2 className="text-white text-center text-2xl font-semibold">
+        <h2 className="text-white text-center text-2xl font-semibold mb-4">
           Cadastrar Serviço
         </h2>
 
@@ -155,18 +155,19 @@ export default function AdminServices() {
             <button
               type="button"
               onClick={() => toggleVehicleSelection("carro")}
-              className={`w-1/2 p-3 rounded font-bold text-white transition ${
+              className={`w-1/2 p-3 rounded font-bold text-white transition cursor-pointer ${
                 selectedVehicles.has("carro") ? "bg-blue-500" : "bg-gray-700"
-              }`}
+              } hover:bg-blue-600 active:bg-blue-700 active:scale-95`}
             >
               Carro
             </button>
+
             <button
               type="button"
               onClick={() => toggleVehicleSelection("moto")}
-              className={`w-1/2 p-3 rounded font-bold text-white transition ${
+              className={`w-1/2 p-3 rounded font-bold text-white transition cursor-pointer ${
                 selectedVehicles.has("moto") ? "bg-blue-500" : "bg-gray-700"
-              }`}
+              } hover:bg-blue-600 active:bg-blue-700 active:scale-95`}
             >
               Moto
             </button>
@@ -177,7 +178,7 @@ export default function AdminServices() {
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold">R$</span>
                 <input
-                  type="text"
+                  type="number"
                   className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400 appearance-none"
                   placeholder="Carro Pequeno"
                   onChange={(e) =>
@@ -188,7 +189,7 @@ export default function AdminServices() {
               <div className="flex items-center gap-2">
                 <span className="text-white font-bold">R$</span>
                 <input
-                  type="text"
+                  type="number"
                   className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400 appearance-none"
                   placeholder="Carro Grande"
                   onChange={(e) =>
@@ -203,18 +204,19 @@ export default function AdminServices() {
             <div className="flex items-center gap-2">
               <span className="text-white font-bold">R$</span>
               <input
-                type="text"
+                type="number"
                 className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400 appearance-none"
                 placeholder="Preço Moto"
                 onChange={(e) => updateVehiclePrice("moto", e.target.value)}
               />
             </div>
           )}
+
           {/* Extras */}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <input
               type="text"
-              className="flex-1 p-3 border rounded bg-gray-700 text-white"
+              className="flex-1 min-w-0 p-3 border rounded bg-gray-700 text-white"
               value={extraName}
               onChange={(e) => setExtraName(e.target.value)}
               placeholder="Nome do extra"
@@ -222,18 +224,17 @@ export default function AdminServices() {
             <div className="flex items-center gap-2">
               <span className="text-white font-bold">R$</span>
               <input
-                type="text"
+                type="number"
                 className="w-20 p-3 border rounded bg-gray-700 text-white appearance-none"
                 value={extraPrice}
                 onChange={(e) => setExtraPrice(e.target.value)}
                 placeholder="0"
               />
             </div>
-
             <button
               type="button"
               onClick={addExtra}
-              className="bg-green-500 text-white p-3 rounded hover:bg-green-600 transition cursor-pointer"
+              className="bg-green-500 text-white p-3 rounded hover:bg-green-600 active:bg-green-700 active:scale-95 transition cursor-pointer flex items-center justify-center"
             >
               <FontAwesomeIcon icon={faPlus} />
             </button>
@@ -247,11 +248,13 @@ export default function AdminServices() {
                   key={index}
                   className="flex justify-between items-center bg-gray-700 p-2 rounded mt-2"
                 >
-                  {extra.name} - R$ {extra.price}
+                  <span className="flex items-center gap-1">
+                    {extra.name} - <strong>R$</strong> {extra.price}
+                  </span>
                   <button
                     type="button"
                     onClick={() => removeExtra(index)}
-                    className="text-red-500 cursor-pointer"
+                    className="text-red-500 hover:text-red-700 active:text-red-800 active:scale-95 cursor-pointer transition"
                   >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
@@ -263,9 +266,9 @@ export default function AdminServices() {
           {/* Botão de Salvar */}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white font-bold p-3 rounded mt-4 hover:bg-blue-600 transition"
+            className="w-full bg-blue-500 text-white font-bold p-3 rounded mt-4 hover:bg-blue-600 active:bg-blue-700 active:scale-95 transition cursor-pointer"
           >
-            Cadastrar Serviço
+            Cadastrar
           </button>
         </form>
       </div>

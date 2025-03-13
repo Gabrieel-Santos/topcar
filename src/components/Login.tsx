@@ -106,25 +106,29 @@ export default function Login() {
           <div className="text-right">
             <a
               href="/forgot-password"
-              className="text-blue-400 hover:underline text-sm"
+              className="text-blue-400 hover:underline active:underline text-sm transition"
             >
               Esqueceu sua senha?
             </a>
           </div>
-          <button className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 transition">
+          <button className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600 active:bg-blue-700 active:scale-95 transition cursor-pointer">
             Entrar
           </button>
         </form>
         <hr className="my-4 border-gray-600" />
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 bg-white text-black p-3 rounded hover:bg-gray-300 transition"
+          className="w-full flex items-center justify-center gap-2 bg-white text-black p-3 rounded hover:bg-gray-300 active:bg-gray-400 active:scale-95 transition cursor-pointer"
         >
           <FcGoogle size={20} /> Entrar com Google
         </button>
+
         <p className="text-center text-white mt-4">
           Não tem conta?{" "}
-          <a href="/register" className="text-blue-400 hover:underline">
+          <a
+            href="/register"
+            className="text-blue-400 hover:underline active:underline transition"
+          >
             Registrar
           </a>
         </p>
