@@ -11,3 +11,8 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: none;
 }
+
+/* Mudar apenas a cor de fundo do Toast */
+.Toastify__toast {
+  background-color: #1f2937 !important; /* bg-gray-800 no Tailwind */
+}

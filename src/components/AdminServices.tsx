@@ -133,7 +133,6 @@ export default function AdminServices() {
         {error && <p className="text-red-500 text-center mt-2">{error}</p>}
 
         <form onSubmit={saveService} className="space-y-4">
-          {/* Nome do Serviço */}
           <input
             type="text"
             className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400"
@@ -142,7 +141,6 @@ export default function AdminServices() {
             placeholder="Nome do Serviço (Ex: Lavagem completa)"
           />
 
-          {/* Descrição do Serviço */}
           <textarea
             className="w-full p-3 border rounded bg-gray-700 text-white placeholder-gray-400"
             value={description}
@@ -150,7 +148,6 @@ export default function AdminServices() {
             placeholder="Descrição do Serviço"
           />
 
-          {/* Seleção do Tipo de Veículo */}
           <div className="flex gap-2">
             <button
               type="button"
@@ -212,7 +209,6 @@ export default function AdminServices() {
             </div>
           )}
 
-          {/* Extras */}
           <div className="flex flex-wrap items-center gap-2">
             <input
               type="text"
@@ -240,7 +236,6 @@ export default function AdminServices() {
             </button>
           </div>
 
-          {/* Lista de Extras adicionados */}
           {extras.length > 0 && (
             <ul className="mt-4 text-white">
               {extras.map((extra, index) => (
@@ -263,7 +258,6 @@ export default function AdminServices() {
             </ul>
           )}
 
-          {/* Botão de Salvar */}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white font-bold p-3 rounded mt-4 hover:bg-blue-600 active:bg-blue-700 active:scale-95 transition cursor-pointer"

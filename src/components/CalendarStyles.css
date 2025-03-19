@@ -67,7 +67,16 @@
   border-radius: 6px;
 }
 
-/* Removendo bordas feias */
+/* Estilização dos dias desativados */
+.custom-calendar .react-calendar__tile:disabled {
+  color: #718096 !important; /* Cinza mais suave */
+  background-color: #1f2937 !important; /* Mesmo fundo do calendário */
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Removendo bordas */
 .custom-calendar .react-calendar__tile:disabled {
   color: #555;
 }

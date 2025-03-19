@@ -133,8 +133,6 @@ export default function Login() {
           </a>
         </p>
       </div>
-
-      {/* Modal para solicitar Nome e Telefone */}
       <UserInfoModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

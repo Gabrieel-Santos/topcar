@@ -3,7 +3,7 @@ import { db } from "../firebaseConfig";
 import {
   collection,
   addDoc,
-  getDocs,
+  onSnapshot,
   updateDoc,
   deleteDoc,
   doc,
@@ -11,9 +11,13 @@ import {
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faPlus, faEdit } from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { z } from "zod";
 import "./CalendarStyles.css";
+import CustomTimePicker from "./CustomTimePicker";
+import ConfirmModal from "./ConfirmModal";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Esquema de validação com Zod
 const scheduleSchema = z.object({
@@ -35,11 +39,24 @@ const getBrasiliaDate = (date: Date) => {
     .join("-"); // Retorna no formato YYYY-MM-DD
 };
 
+const isDateDisabled = ({ date, view }: { date: Date; view: string }) => {
+  if (view === "month") {
+    // Só desativa os dias, permitindo navegação entre meses/anos
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const calendarDate = new Date(date);
+    calendarDate.setHours(0, 0, 0, 0);
+
+    return calendarDate < today; // Desativa apenas dias anteriores a hoje
+  }
+  return false; // Permite seleção de meses e anos
+};
+
 // Formatar data para exibição amigável (Ex: Segunda-feira, 14 de Março)
 const formatDisplayDate = (dateString: string) => {
   const date = new Date(dateString + "T00:00:00-03:00"); // Força o fuso de Brasília
   return date.toLocaleDateString("pt-BR", {
-    weekday: "long",
     day: "numeric",
     month: "long",
   });
@@ -47,7 +64,7 @@ const formatDisplayDate = (dateString: string) => {
 
 export default function AdminSchedule() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [time, setTime] = useState("");
+  const [time, setTime] = useState("12:00");
   const [schedule, setSchedule] = useState<
     { id: string; date: string; time: string }[]
   >([]);
@@ -55,26 +72,59 @@ export default function AdminSchedule() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{
+    id: string;
+    date: string;
+    time: string;
+  } | null>(null);
 
   // Carregar os horários do Firebase
   useEffect(() => {
-    const fetchSchedule = async () => {
-      const querySnapshot = await getDocs(collection(db, "schedule"));
-      const fetchedSchedule = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as { id: string; date: string; time: string }[];
-      setSchedule(fetchedSchedule);
-    };
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Remove a parte do horário para comparação
 
-    fetchSchedule();
+    const unsubscribe = onSnapshot(collection(db, "schedule"), (snapshot) => {
+      snapshot.docs.forEach(async (doc) => {
+        const slot = doc.data() as { date: string; time: string };
+        const slotDate = new Date(slot.date + "T00:00:00-03:00");
+
+        if (slotDate < today) {
+          await deleteDoc(doc.ref); // Exclui horários passados do Firebase
+        }
+      });
+
+      // Atualiza a lista sem horários antigos
+      const fetchedSchedule = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as { date: string; time: string }),
+        }))
+        .filter((slot) => {
+          const slotDate = new Date(slot.date + "T00:00:00-03:00");
+          return slotDate >= today;
+        });
+
+      setSchedule(fetchedSchedule);
+    });
+
+    return () => unsubscribe(); // Cancela a escuta ao desmontar o componente
   }, []);
 
   // Adicionar horário ao Firebase com validação
   const addTimeSlot = async () => {
-    if (!selectedDate || !time) return setError("Selecione um horário válido!");
+    if (!selectedDate || !time.trim()) {
+      setError("Selecione um horário válido!");
+      return;
+    }
 
-    const dateString = getBrasiliaDate(selectedDate); // Corrige para Brasília
+    const dateString = getBrasiliaDate(selectedDate);
+    const today = getBrasiliaDate(new Date());
+
+    if (dateString < today) {
+      setError("Não é possível marcar horários para dias anteriores!");
+      return;
+    }
 
     // Validar com Zod
     const validation = scheduleSchema.safeParse({ date: dateString, time });
@@ -94,9 +144,10 @@ export default function AdminSchedule() {
 
     const newSlot = { date: dateString, time };
     const docRef = await addDoc(collection(db, "schedule"), newSlot);
-    setSchedule([...schedule, { id: docRef.id, ...newSlot }]); // Atualiza a lista localmente
-    setTime("");
+    setSchedule([...schedule, { id: docRef.id, ...newSlot }]);
+
     setError(null);
+    toast.success("Horário cadastrado com sucesso!");
   };
 
   // Atualizar horário no Firebase
@@ -112,12 +163,44 @@ export default function AdminSchedule() {
     setEditing(null);
   };
 
-  // Remover horário do Firebase
-  const removeTimeSlot = async (id: string) => {
-    const docRef = doc(db, "schedule", id);
-    await deleteDoc(docRef);
+  // Agrupar horários por dia da semana
+  const groupedByWeekday = schedule.reduce((acc, slot) => {
+    const date = new Date(slot.date + "T00:00:00-03:00");
+    const weekday = date.toLocaleDateString("pt-BR", { weekday: "long" });
 
-    setSchedule(schedule.filter((slot) => slot.id !== id));
+    if (!acc[weekday]) {
+      acc[weekday] = [];
+    }
+
+    acc[weekday].push(slot);
+    return acc;
+  }, {} as Record<string, { id: string; date: string; time: string }[]>);
+
+  // Ordenar os dias da semana corretamente
+  const weekOrder = [
+    "segunda-feira",
+    "terça-feira",
+    "quarta-feira",
+    "quinta-feira",
+    "sexta-feira",
+    "sábado",
+    "domingo",
+  ];
+  const sortedWeekdays = weekOrder.filter((day) => groupedByWeekday[day]);
+
+  const confirmDelete = (slot: { id: string; date: string; time: string }) => {
+    setSelectedSlot(slot);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (selectedSlot) {
+      await deleteDoc(doc(db, "schedule", selectedSlot.id));
+      setModalOpen(false);
+      setSelectedSlot(null);
+
+      toast.success("Horário excluído com sucesso!");
+    }
   };
 
   return (
@@ -129,35 +212,22 @@ export default function AdminSchedule() {
 
         {/* Exibição de erro */}
         {error && <p className="text-red-500 text-center">{error}</p>}
-
-        {/* Calendário estilizado */}
         <div className="mb-4 p-3 rounded-lg shadow-md bg-gray-700">
           <Calendar
             onChange={(date) => setSelectedDate(date as Date)}
             value={selectedDate}
             className="custom-calendar"
-            next2Label={null} // Remove seta de avançar ano
-            prev2Label={null} // Remove seta de retroceder ano
+            minDate={new Date(new Date().setHours(0, 0, 0, 0))}
+            tileDisabled={isDateDisabled}
+            next2Label={null}
+            prev2Label={null}
+            maxDetail="month"
           />
         </div>
-
-        {/* Exibição da data formatada */}
-        {selectedDate && (
-          <p className="text-white text-lg font-semibold text-center mb-2">
-            {formatDisplayDate(getBrasiliaDate(selectedDate))}
-          </p>
-        )}
-
-        {/* Input de horário estilizado e botão "+" aumentado */}
         {selectedDate && (
           <div className="flex items-center gap-2 w-full">
             <div className="relative flex-1">
-              <input
-                type="time"
-                className="w-full p-3 border rounded bg-gray-700 text-white appearance-none focus:ring focus:ring-blue-500"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-              />
+              <CustomTimePicker value={time} onChange={setTime} />
             </div>
 
             <button
@@ -168,53 +238,71 @@ export default function AdminSchedule() {
             </button>
           </div>
         )}
+        {schedule.length === 0 ? (
+          <p className="text-gray-400 text-center mt-4">
+            Nenhum horário marcado.
+          </p>
+        ) : (
+          sortedWeekdays.map((weekday) => (
+            <div key={weekday} className="mt-6 w-full">
+              <h3 className="text-center text-blue-400 text-xl font-bold mb-2">
+                {weekday.charAt(0).toUpperCase() + weekday.slice(1)}
+              </h3>
 
-        {/* Lista de horários cadastrados */}
-        <ul className="mt-4 w-full">
-          {schedule.map((slot) => (
-            <li
-              key={slot.id}
-              className="flex justify-between items-center bg-gray-700 p-3 rounded mt-2 text-white shadow-md border border-gray-600"
-            >
-              <div className="flex flex-col">
-                <span className="font-semibold text-blue-400">
-                  {formatDisplayDate(slot.date)}
-                </span>
+              <ul className="w-full">
+                {groupedByWeekday[weekday].map((slot) => {
+                  return (
+                    <li
+                      key={slot.id}
+                      className="flex justify-between items-center bg-gray-700 p-3 rounded mt-2 text-white shadow-md border border-gray-600"
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-blue-400">
+                          {formatDisplayDate(slot.date)}
+                        </span>
 
-                {editing?.id === slot.id ? (
-                  <input
-                    type="time"
-                    className="mt-1 p-2 border rounded bg-gray-600 text-white"
-                    value={editing.time}
-                    onChange={(e) =>
-                      setEditing({ ...editing, time: e.target.value })
-                    }
-                    onBlur={() => updateTimeSlot(slot.id, editing.time)}
-                  />
-                ) : (
-                  <span className="text-lg font-bold">{slot.time}</span>
-                )}
-              </div>
+                        {editing?.id === slot.id ? (
+                          <input
+                            type="time"
+                            className="mt-1 p-2 border rounded bg-gray-600 text-white"
+                            value={editing.time}
+                            onChange={(e) =>
+                              setEditing({ ...editing, time: e.target.value })
+                            }
+                            onBlur={() => updateTimeSlot(slot.id, editing.time)}
+                          />
+                        ) : (
+                          <span className="text-lg font-bold">{slot.time}</span>
+                        )}
+                      </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setEditing({ id: slot.id, time: slot.time })}
-                  className="text-yellow-400 hover:text-yellow-500 active:text-yellow-600 active:scale-95 transition text-lg"
-                >
-                  <FontAwesomeIcon icon={faEdit} />
-                </button>
-
-                <button
-                  onClick={() => removeTimeSlot(slot.id)}
-                  className="text-red-500 hover:text-red-700 active:text-red-800 active:scale-95 transition text-lg"
-                >
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => confirmDelete(slot)}
+                          className="text-red-500 hover:text-red-700 active:text-red-800 active:scale-95 transition text-lg"
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))
+        )}
       </div>
+      <ConfirmModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Excluir Horário"
+        message={`Tem certeza que deseja excluir o horário ${
+          selectedSlot?.time
+        } - ${formatDisplayDate(selectedSlot?.date ?? "")}?`}
+        confirmText="Excluir"
+        confirmColor="bg-red-500 hover:bg-red-600"
+      />
     </div>
   );
 }
