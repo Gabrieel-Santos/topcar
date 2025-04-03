@@ -9,6 +9,7 @@ import AdminServices from "./components/AdminServices";
 import AdminSchedule from "./components/AdminSchedule";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Booking from "./components/Booking";
 
 function App() {
   return (
@@ -31,7 +32,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* Rotas protegidas para usuários autenticados */}
-          <Route element={<ProtectedRoute />}></Route>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/book" element={<Booking />} />
+          </Route>
 
           {/* Rotas exclusivas para Admin */}
           <Route element={<AdminRoute />}>
