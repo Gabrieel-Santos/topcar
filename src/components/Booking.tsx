@@ -114,16 +114,16 @@ export default function Booking() {
         {step === 2 && (
           <div className="flex flex-col text-left">
             {/* Título + botão de voltar lado a lado */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="relative w-full mb-6 h-10 flex items-center justify-center">
+              <h2 className="text-white text-2xl font-semibold">
+                Escolha um serviço
+              </h2>
               <button
                 onClick={() => setStep(1)}
-                className="text-white text-2xl hover:text-blue-400 transition active:scale-95"
+                className="absolute left-0 text-white text-2xl hover:text-blue-400 active:scale-95 transition p-2 rounded"
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
               </button>
-              <h2 className="text-white text-2xl font-semibold text-center flex-1">
-                Escolha um serviço
-              </h2>
             </div>
 
             {/* Lista de serviços */}
@@ -157,19 +157,19 @@ export default function Booking() {
         {step === 3 && selectedService && (
           <div className="flex flex-col text-left items-center">
             {/* Cabeçalho */}
-            <div className="flex items-center justify-between mb-4 w-full">
+            <div className="relative w-full mb-4 h-10 flex items-center justify-center">
+              <h2 className="text-white text-2xl font-semibold">
+                Agendar horário
+              </h2>
               <button
                 onClick={() => {
                   setSelectedService(null);
                   setStep(2);
                 }}
-                className="text-white text-xl hover:text-blue-400 active:scale-95 transition p-2 rounded"
+                className="absolute left-0 text-white text-xl hover:text-blue-400 active:scale-95 transition p-2 rounded"
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
               </button>
-              <h2 className="text-white text-2xl font-semibold text-center flex-1">
-                Agendar horário
-              </h2>
             </div>
 
             {/* Serviço selecionado */}
